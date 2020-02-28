@@ -12,10 +12,6 @@ app.use(express.static(path.join(__dirname, 'views')));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get('/api/hello', (req, res) => {
-  res.json({ express: 'Hello From Express (Server)' });
-});
-
 app.get('/lists', (req, res) => {
   const sql = `
                 SELECT * FROM lists
@@ -25,14 +21,52 @@ app.get('/lists', (req, res) => {
     res.json(result)
   })
 });
-app.get('/items', (req, res) => {
+app.get('/todos', (req, res) => {
   const sql = `
-                SELECT * FROM items
+              SELECT todo.id, todo.body FROM todo
               `;
   const query = db.query(sql, (err, result)=>{
     if(err) throw err;
-    res.json(result)
+    setTimeout(()=>{
+      res.json(result)
+    }, 2500)
   })
 });
+app.get('/inprogress', (req, res) => {
+  const sql = `
+              SELECT * FROM inprogress
+              `;
+  const query = db.query(sql, (err, result)=>{
+    if(err) throw err;
+    setTimeout(()=>{
+      res.json(result)
+    }, 1500)
+  })
+});
+app.get('/done', (req, res) => {
+  const sql = `
+              SELECT * FROM done
+              `;
+  const query = db.query(sql, (err, result)=>{
+    if(err) throw err;
+    setTimeout(()=>{
+      res.json(result)
+    }, 4000)
+  })
+});
+app.post('/newTodo', (req, res)=>{
+  const sql = `
+                INSERT INTO todo(body) VALUES ('${req.body.body}')
+              `;
+  const query = db.query(sql, (err, result)=>{
+    if(err) throw err;
+    console.log(result);
+    if(result.affectedRows){
+      res.json({status: true, item_id: result.insertId})
+    }else{
+      res.json({status: false})
+    }
+  })
+})
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
